@@ -3,212 +3,166 @@
 <head>
     <meta charset="UTF-8">
     <title>PhishShield AI</title>
-
-    <!-- ✅ Mobile responsive -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
         body {
-            font-family: Arial, sans-serif;
-            background: linear-gradient(135deg, #020617, #0f172a);
-            color: #e5e7eb;
-            text-align: center;
-            padding: 20px;
             margin: 0;
-        }
-
-        h1 {
-            color: #38bdf8;
-            margin-bottom: 5px;
-        }
-
-        p.subtitle {
-            color: #94a3b8;
-            margin-top: 0;
-            margin-bottom: 20px;
-            font-size: 14px;
+            min-height: 100vh;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #020617, #020617);
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
         .container {
+            width: 95%;
+            max-width: 420px;
             background: #020617;
-            width: 90%;
-            max-width: 520px;
-            margin: auto;
-            padding: 20px;
             border-radius: 16px;
-            box-shadow: 0px 0px 30px rgba(56,189,248,0.25);
+            padding: 20px;
+            color: white;
+            box-shadow: 0 0 25px rgba(56,189,248,0.25);
         }
 
-        input {
+        h1 {
+            text-align: center;
+            margin-bottom: 5px;
+            color: #38bdf8;
+        }
+
+        p.subtitle {
+            text-align: center;
+            font-size: 14px;
+            opacity: 0.8;
+            margin-bottom: 20px;
+        }
+
+        input[type="text"] {
             width: 100%;
-            padding: 14px;
-            margin: 12px 0;
-            border-radius: 10px;
+            padding: 12px;
+            border-radius: 8px;
             border: none;
             outline: none;
-            font-size: 16px;
+            margin-bottom: 10px;
         }
 
         button {
             width: 100%;
-            padding: 14px;
-            background: #38bdf8;
-            color: #020617;
+            padding: 12px;
+            border-radius: 8px;
             border: none;
-            border-radius: 10px;
+            background: #38bdf8;
+            color: black;
             font-weight: bold;
-            font-size: 15px;
             cursor: pointer;
-            margin-top: 8px;
         }
 
-        button:hover {
-            background: #0ea5e9;
+        .section {
+            margin-top: 20px;
+        }
+
+        ul {
+            padding-left: 18px;
         }
 
         .safe {
             color: #22c55e;
-            font-weight: bold;
         }
 
-        .medium {
-            color: #facc15;
-            font-weight: bold;
-        }
-
-        .danger {
+        .phish {
             color: #ef4444;
-            font-weight: bold;
-        }
-
-        .warning {
-            color: #fb923c;
-            font-weight: bold;
-        }
-
-        ul {
-            text-align: left;
-            max-height: 160px;
-            overflow-y: auto;
-            padding-left: 20px;
-            font-size: 14px;
-        }
-
-        li {
-            margin-bottom: 6px;
-        }
-
-        hr {
-            border: 0.5px solid #1e293b;
-            margin: 18px 0;
         }
 
         canvas {
-            width: 100% !important;
-            max-width: 300px;
-            height: auto !important;
-            margin: auto;
+            margin-top: 15px;
+            max-height: 220px;
         }
     </style>
 </head>
 
 <body>
 
-<h1>🛡 PhishShield AI</h1>
-<p class="subtitle">AI-Based Anti-Phishing & Link Safety System</p>
-
 <div class="container">
+    <h1>🛡 PhishShield AI</h1>
+    <p class="subtitle">AI-Based Anti-Phishing & Link Safety System</p>
 
-    <!-- URL INPUT -->
     <form method="POST">
         <input type="text" name="url" placeholder="Enter URL to scan" required>
         <button type="submit">Scan Link</button>
     </form>
 
-    <!-- RESULT -->
     {% if result %}
-        <hr>
+    <div class="section">
         <h3>
             Result:
-            <span class="
-                {% if level == 'Low Risk' %}safe
-                {% elif level == 'Medium Risk' %}medium
-                {% else %}danger
-                {% endif %}
-            ">
-                {{ result }}
-            </span>
+            {% if result == "Safe Link" %}
+                <span class="safe">🟢 Safe Link</span>
+            {% else %}
+                <span class="phish">🔴 Phishing Link</span>
+            {% endif %}
         </h3>
-
-        <p>Risk Score: <b>{{ risk }}%</b></p>
-
-        <p>
-            Threat Level:
-            <b class="
-                {% if level == 'Low Risk' %}safe
-                {% elif level == 'Medium Risk' %}medium
-                {% else %}danger
-                {% endif %}
-            ">
-                {{ level }}
-            </b>
-        </p>
-
-        {% if extra_warning %}
-            <p class="warning">{{ extra_warning }}</p>
-        {% endif %}
+        <p>Risk Score: {{ risk }}%</p>
+    </div>
     {% endif %}
 
-    <!-- WHY LINK IS RISKY -->
-    {% if reasons and level != "Low Risk" %}
-        <hr>
-        <h4>🔍 Why this link is risky:</h4>
+    <div class="section">
+        <h3>📜 Scan History</h3>
         <ul>
-            {% for r in reasons %}
-                <li>{{ r }}</li>
+            {% for item in history %}
+                <li>
+                    {{ item.url }} →
+                    {% if item.result == "Safe Link" %}
+                        <span class="safe">Safe ({{ item.risk }}%)</span>
+                    {% else %}
+                        <span class="phish">Phishing ({{ item.risk }}%)</span>
+                    {% endif %}
+                </li>
             {% endfor %}
         </ul>
-    {% endif %}
+    </div>
 
-    <!-- HISTORY -->
-    <hr>
-    <h3>📜 Scan History</h3>
-    <ul>
-        {% for item in history %}
-            <li>{{ item.url }} → {{ item.result }} ({{ item.risk }}%)</li>
-        {% endfor %}
-    </ul>
-
-    <form method="POST" action="/clear">
-        <button type="submit">Clear History</button>
-    </form>
-
-    <!-- CHART -->
-    <hr>
-    <h3>📊 Scan Statistics</h3>
-    <canvas id="scanChart"></canvas>
-
+    <div class="section">
+        <h3>📊 Scan Statistics</h3>
+        <canvas id="scanChart"></canvas>
+    </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-    const safeCount = Number("{{ safe_count }}");
-    const phishCount = Number("{{ phish_count }}");
+<!-- Hidden values to safely pass backend data -->
+<input type="hidden" id="safeCount" value="{{ safe_count | default(0) }}">
+<input type="hidden" id="phishCount" value="{{ phish_count | default(0) }}">
 
-    new Chart(document.getElementById("scanChart"), {
-        type: "doughnut",
-        data: {
-            labels: ["Safe Links", "Phishing Links"],
-            datasets: [{
-                data: [safeCount, phishCount],
-                backgroundColor: ["#22c55e", "#ef4444"]
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false
-        }
-    });
+<script>
+    const ctx = document.getElementById("scanChart");
+
+    const safeCount = parseInt(
+        document.getElementById("safeCount").value
+    );
+
+    const phishCount = parseInt(
+        document.getElementById("phishCount").value
+    );
+
+    if (ctx) {
+        new Chart(ctx, {
+            type: "doughnut",
+            data: {
+                labels: ["Safe Links", "Phishing Links"],
+                datasets: [{
+                    data: [safeCount, phishCount],
+                    backgroundColor: ["#22c55e", "#ef4444"]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false
+            }
+        });
+    }
 </script>
 
 </body>
