@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>PhishShield AI</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #0f172a;
+            color: #e5e7eb;
+            text-align: center;
+            padding-top: 40px;
+        }
+
+        h1 {
+            color: #38bdf8;
+        }
+
+        .container {
+            background: #020617;
+            width: 520px;
+            margin: auto;
+            padding: 25px;
+            border-radius: 14px;
+            box-shadow: 0px 0px 25px rgba(56,189,248,0.25);
+        }
+
+        input {
+            width: 92%;
+            padding: 12px;
+            margin: 12px 0;
+            border-radius: 8px;
+            border: none;
+            outline: none;
+            font-size: 14px;
+        }
+
+        button {
+            padding: 12px 22px;
+            background: #38bdf8;
+            color: #020617;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 6px;
+        }
+
+        button:hover {
+            background: #0ea5e9;
+        }
+
+        .safe {
+            color: #22c55e;
+            font-weight: bold;
+        }
+
+        .medium {
+            color: #facc15;
+            font-weight: bold;
+        }
+
+        .danger {
+            color: #ef4444;
+            font-weight: bold;
+        }
+
+        .warning {
+            color: #fb923c;
+            font-weight: bold;
+        }
+
+        ul {
+            text-align: left;
+            max-height: 150px;
+            overflow-y: auto;
+            padding-left: 20px;
+        }
+
+        hr {
+            border: 0.5px solid #1e293b;
+            margin: 18px 0;
+        }
+    </style>
+</head>
+
+<body>
+
+<h1>🛡 PhishShield AI</h1>
+<p>AI-Based Anti-Phishing & Link Safety System</p>
+
+<div class="container">
+
+    <!-- URL INPUT -->
+    <form method="POST">
+        <input type="text" name="url" placeholder="Enter URL to scan" required>
+        <br>
+        <button type="submit">Scan Link</button>
+    </form>
+
+    <!-- RESULT -->
+    {% if result %}
+        <hr>
+        <h3>
+            Result:
+            <span class="
+                {% if level == 'Low Risk' %}safe
+                {% elif level == 'Medium Risk' %}medium
+                {% else %}danger
+                {% endif %}
+            ">
+                {{ result }}
+            </span>
+        </h3>
+
+        <p>Risk Score: <b>{{ risk }}%</b></p>
+
+        <p>
+            Threat Level:
+            <b class="
+                {% if level == 'Low Risk' %}safe
+                {% elif level == 'Medium Risk' %}medium
+                {% else %}danger
+                {% endif %}
+            ">
+                {{ level }}
+            </b>
+        </p>
+
+        {% if extra_warning %}
+            <p class="warning">{{ extra_warning }}</p>
+        {% endif %}
+    {% endif %}
+
+    <!-- WHY LINK IS RISKY -->
+    {% if reasons and level != "Low Risk" %}
+        <hr>
+        <h4>🔍 Why this link is risky:</h4>
+        <ul>
+            {% for r in reasons %}
+                <li>{{ r }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+
+    <!-- HISTORY -->
+    <hr>
+    <h3>📜 Scan History</h3>
+    <ul>
+        {% for item in history %}
+            <li>{{ item.url }} → {{ item.result }} ({{ item.risk }}%)</li>
+        {% endfor %}
+    </ul>
+
+    <form method="POST" action="/clear">
+        <button type="submit">Clear History</button>
+    </form>
+
+    <!-- CHART -->
+    <hr>
+    <h3>📊 Scan Statistics</h3>
+    <canvas id="scanChart" width="320" height="220"></canvas>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const safeCount = Number("{{ safe_count }}");
+    const phishCount = Number("{{ phish_count }}");
+
+    new Chart(document.getElementById("scanChart"), {
+        type: "doughnut",
+        data: {
+            labels: ["Safe Links", "Phishing Links"],
+            datasets: [{
+                data: [safeCount, phishCount],
+                backgroundColor: ["#22c55e", "#ef4444"]
+            }]
+        }
+    });
+</script>
+
+</body>
+</html>
