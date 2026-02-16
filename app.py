@@ -3,6 +3,9 @@ import pickle
 from collections import Counter
 
 app = Flask(__name__)
+@app.route("/health")
+def health():
+    return "OK"
 
 # Load trained ML model
 model = pickle.load(open("phishing_model.pkl", "rb"))
@@ -109,4 +112,4 @@ def clear():
     return redirect("/")
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=10000)
+    app.run()
